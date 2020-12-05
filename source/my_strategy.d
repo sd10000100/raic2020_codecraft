@@ -19,11 +19,32 @@ class MyStrategy
         auto myId = playerView.myId;
 
                 Action action;
+       // if (playerView.currentTick==1)
+       // {
+           // playerView.entities
 
+            //find closest enemy
+            //MeleeBase 
+
+            // //min
+            // foreach (entity; playerView.entities) {
+			// 	if(entity.entityType ==2 || entity.entityType ==4 || entity.entityType ==6)
+            //     {
+                    
+            //     }
+			// 		// if (distanceSqr(unit.position, lootBox.position) < 3) {
+			// 		// 	if(game.properties.weaponParameters[unit.weapon.get.typ].bullet.damage< game.properties.weaponParameters[weap.weaponType].bullet.damage){
+			// 		// 		targetPos = lootBox.position;
+			// 		// 		swapWeapon = true;
+			// 		// 	}
+			// 		// }
+				
+			// }
             
             
+            
 
-Nullable!(BuildAction) buildAction = Nullable!(BuildAction).init;
+Nullable!(BuildAction) buildAction = Nullable!(BuildAction).init;//BuildAction();
 Nullable!(AttackAction) attackAction = Nullable!(AttackAction).init;
 Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
 
@@ -40,13 +61,11 @@ Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
                 bool isHouseIsBuilding = false;
 
                 bool isNewHouse = false;
-
                 int oldhouseCount = 0; 
+               // int[int] rep
                  int repairCounts = 0;
-
-                  int warunit = 0;
+                 int warunit = 0;
                 int rangeCount = 0;
-                int meleeCount = 0;
                 int buildCount = 0;
                 int houseCount = 0;
                 int unitCount = 0;
@@ -59,30 +78,28 @@ Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
                     {
                         resCount = player.resource;
                     }
+
+
                 }
 
-                foreach (myEntity; playerView.entities) {
-                    if (!myEntity.playerId.isNull() && myEntity.playerId.get==myId) {
-                        if (myEntity.entityType == EntityType.BuilderUnit)
+                foreach (enemyEntity; playerView.entities) {
+                    if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get==myId) {
+                        if (enemyEntity.entityType == EntityType.BuilderUnit)
                             buildCount++;
-                        if (myEntity.entityType == EntityType.MeleeUnit)
-                            meleeCount++;
-                        if (myEntity.entityType == EntityType.RangedUnit)
+                        if (enemyEntity.entityType == EntityType.RangedUnit)
                             rangeCount++;
-                        if (myEntity.entityType == EntityType.House)
+                        if (enemyEntity.entityType == EntityType.House)
                             houseCount++;
-                        if (myEntity.entityType ==3 || myEntity.entityType ==5 || myEntity.entityType ==7)
+                        if (enemyEntity.entityType ==3 || enemyEntity.entityType ==5 || enemyEntity.entityType ==7)
                             unitCount++;
-                        if (myEntity.entityType ==9)
+                        if (enemyEntity.entityType ==9)
                             turretCount++;
                     }
-                }       
-
-
-
+                }
         foreach (entity; playerView.entities) {
+            int countRes = playerView.entityProperties[EntityType.RangedUnit].buildScore +rangeCount;
             if(!entity.playerId.isNull() && entity.playerId.get==myId){
-
+                
                 if (houseCount!=oldhouseCount)
                 {
                     isHouseIsBuilding = false;
@@ -91,23 +108,16 @@ Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
                 }
 				if(entity.entityType ==5 || entity.entityType ==7)//если вояка
                 {
-                    if (!entity.playerId.isNull() && entity.playerId.get ==myId){
-                        Vec2Int target = Vec2Int(playerView.mapSize+warunit*5,0); //playerView.mapSize+warunit*5
-
-
-                        Nullable!Entity nearestForBaseEnemy;
-                        int minDistToBase  = 10000;
-                        foreach (enemyEntity; playerView.entities) {
-                            if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get!=myId) {
-                                if (nearestForBaseEnemy.isNull() ||
-                                    distanceSqr!int(Point2D!int(15,15), Point2D!int(enemyEntity.position.x, enemyEntity.position.y)) <
-                                        distanceSqr(Point2D!int(15,15), Point2D!int(nearestForBaseEnemy.get.position.x, nearestForBaseEnemy.get.position.y))) {
-                                    nearestForBaseEnemy = enemyEntity;
-                                    minDistToBase = distanceSqr!int(Point2D!int(15,15), Point2D!int(enemyEntity.position.x, enemyEntity.position.y));
-                                }
-                            }
-                        }
-
+                   if(rangeCount<10){
+                        Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.RangedUnit, EntityType.MeleeUnit]);
+                        Nullable!int enemyid = Nullable!int.init;
+                        attackAction = AttackAction(enemyid,autoattack);
+                        Nullable!(MoveAction) moveAction = MoveAction(Vec2Int(20,20), true,true);//Vec2Int(playerView.mapSize+warunit*5,0)
+                        EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
+                        action.entityActions[entity.id]=ent_act;
+                        warunit+=1;
+                    }
+                    else {
                         Nullable!Entity nearestEnemy;
                         foreach (enemyEntity; playerView.entities) {
                             if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get!=myId) {
@@ -118,23 +128,10 @@ Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
                                 }
                             }
                         }
-                        Nullable!int enemyid = Nullable!int.init;
-                        Nullable!(MoveAction) moveAction = Nullable!(MoveAction).init;
-                        Vec2Int targetpos; 
-                        // if (minDistToBase>900)
-                        // {
-                            enemyid = nearestEnemy.get().id;
-                            targetpos = nearestEnemy.get.position;
-                        // }
-                        // else
-                        // {
-                        //     enemyid = nearestForBaseEnemy.get().id;
-                        //     targetpos = nearestForBaseEnemy.get.position;
-                        // }
                         Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.Resource]);
-                        
+                        Nullable!int enemyid = nearestEnemy.get().id;
                         attackAction = AttackAction(enemyid,Nullable!(AutoAttack).init);
-                        moveAction = MoveAction(targetpos, true,true);//nearestEnemy.get.position
+                        Nullable!(MoveAction) moveAction = MoveAction(nearestEnemy.get.position, true,true);//Vec2Int(playerView.mapSize+warunit*5,0)
                         EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
                         action.entityActions[entity.id]=ent_act;
                         warunit+=1;
@@ -152,7 +149,7 @@ Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
                         }
                     }
 
-                    if(!newBase.isNull()&& (distanceSqr!int(Point2D!int(entity.position.x, entity.position.y), Point2D!int(newBase.get.position.x, newBase.get.position.y))<100))
+                    if(!newBase.isNull() && (idBuilder == entity.id || distanceSqr!int(Point2D!int(entity.position.x, entity.position.y), Point2D!int(newBase.get.position.x, newBase.get.position.y))<100))
                     {        
                         Nullable!(MoveAction) moveAction = MoveAction(newBase.get.position, true,false);
                         repairAction = RepairAction(newBase.get.id);
@@ -172,18 +169,24 @@ Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
                         //     isBuildBaseChecked = true;
                         // }
                         // else 
-                        if(resCount>rr && isBuildBaseChecked==false && (houseCount)*5+10<=unitCount+2  ){
+                        if(resCount>rr && isBuildBaseChecked==false && (houseCount)*5+10<=unitCount  ){
                             int newHouseX = 0;
                             int newHouseY  =0;
-                            if(houseCount<5){
-                                newHouseX = 5+houseCount*3;//100;
+                            if(houseCount<4){
+                                newHouseX = 5+houseCount*4;//100;
                                 newHouseY = 11;//0;
+                            }
+                            else if (houseCount>=4 && houseCount<9)
+                            {
+                                newHouseX = 1;//100;
+                                newHouseY = 1+(houseCount-4)*4;//0;
                             }
                             else
                             {
-                                newHouseX = 0;//100;
-                                newHouseY = 0+(houseCount-5)*3;//0;
+                                newHouseX = 5+(houseCount-9)*4;//100;
+                                newHouseY = 1;//0;
                             }
+                            
    
     // //строим зданиеif
 
@@ -218,28 +221,17 @@ Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
                         }
                     }
                 }
-                else if ((entity.entityType ==EntityType.RangedBase || entity.entityType ==EntityType.MeleeBase) && unitCount<=13+(houseCount)*5){
+                else if (entity.entityType ==EntityType.RangedBase &&  (isHouseIsBuilding==false || countRes+playerView.entityProperties[EntityType.House].buildScore<resCount)){
 
-                    int rangedRes = playerView.entityProperties[EntityType.RangedUnit].buildScore + rangeCount;
-
-                    int meleeCost = playerView.entityProperties[EntityType.MeleeUnit].buildScore + meleeCount;
                     
-                    if (resCount>rangedRes && rangedRes*2/3<=meleeCost && entity.entityType ==EntityType.RangedBase)
+                    
+                    if (resCount>countRes)
                     {
                         int size = playerView.entityProperties[EntityType.RangedBase].size;
                         buildAction = BuildAction(EntityType.RangedUnit, Vec2Int(entity.position.x+size,entity.position.y) );
                         EntityAction ent_act= EntityAction(Nullable!(MoveAction).init, buildAction, attackAction, repairAction);
                         action.entityActions[entity.id]=ent_act;
-                        resCount-=rangedRes;
-                        isBuildUnitChecked = true;
-                    }
-                    else if (resCount>meleeCost && rangedRes*2/3>meleeCost && entity.entityType ==EntityType.MeleeBase)
-                    {
-                        int size = playerView.entityProperties[EntityType.MeleeBase].size;
-                        buildAction = BuildAction(EntityType.MeleeUnit, Vec2Int(entity.position.x+size,entity.position.y) );
-                        EntityAction ent_act= EntityAction(Nullable!(MoveAction).init, buildAction, attackAction, repairAction);
-                        action.entityActions[entity.id]=ent_act;
-                        resCount-=meleeCost;
+                        //resCount-=countRes;
                         isBuildUnitChecked = true;
                     }
 
@@ -248,24 +240,24 @@ Nullable!(RepairAction) repairAction = Nullable!(RepairAction).init;
 
 
 
-                    int countRes = playerView.entityProperties[EntityType.BuilderUnit].buildScore;
+                    int countBuilderUnit = playerView.entityProperties[EntityType.BuilderUnit].buildScore;
                     
-                    if (resCount>countRes && buildCount<7+houseCount)
+                    if (resCount>countBuilderUnit && buildCount<10+houseCount)
                     {
                         int size = playerView.entityProperties[EntityType.BuilderBase].size;
                         buildAction = BuildAction(EntityType.BuilderUnit, Vec2Int(entity.position.x+size,entity.position.y) );
                         EntityAction ent_act= EntityAction(Nullable!(MoveAction).init, buildAction, attackAction, repairAction);
                         action.entityActions[entity.id]=ent_act;
-                        //resCount-=countRes;
+                        //resCount-=countBuilderUnit;
                         isBuildUnitChecked = true;
                     }
-                    else if (buildCount>=7+houseCount)
+                    else if (buildCount>=10+houseCount)
                     {
                         int size = playerView.entityProperties[EntityType.BuilderBase].size;
                         //buildAction = BuildAction(EntityType.BuilderUnit, Vec2Int(entity.position.x+size,entity.position.y) );
                         EntityAction ent_act= EntityAction(Nullable!(MoveAction).init, Nullable!(BuildAction).init, attackAction, repairAction);
                         action.entityActions[entity.id]=ent_act;
-                        //resCount-=countRes;
+                        //resCount-=countBuilderUnit;
                         isBuildUnitChecked = true;
                     }
 
