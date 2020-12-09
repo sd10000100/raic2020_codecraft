@@ -1,5 +1,5 @@
 module strategy.strategy;
-
+import std.random;
 public import model;
 public import helper;
 import std.typecons;
@@ -131,6 +131,7 @@ class Strategy{
         int MinUnitPlayerId = 0;
         int i = 0;
         int j = 0;
+        int k = 0;
                 
         foreach (pl, vpl; playersU)
         {
@@ -140,6 +141,12 @@ class Strategy{
                 MinUnitPlayerId = pl;
             }
         }
+
+
+        int rangedRes = playerView.entityProperties[EntityType.RangedUnit].buildScore + rangeCount;
+
+                    int meleeCost = playerView.entityProperties[EntityType.MeleeUnit].buildScore + meleeCount;
+                    int houseCost = playerView.entityProperties[EntityType.House].buildScore;
 
         foreach (entity; playerView.entities) {
             int countRes = playerView.entityProperties[EntityType.RangedUnit].buildScore +rangeCount;
@@ -158,7 +165,7 @@ class Strategy{
 
 				if(entity.entityType ==5 || entity.entityType ==7)//если вояка
                 {
-                    //action.entityActions[entity.id]=getActionForFighter(entity, playerView);
+                   // action.entityActions[entity.id]=getActionForFighter(entity, playerView);
                     Nullable!Entity nearestEnemy;
 
                     foreach (enemyEntity; playerView.entities) {
@@ -200,7 +207,7 @@ class Strategy{
                         }
                     }
 
-                    if(!newBase.isNull() && (idBuilder == entity.id || j<2 ))//distanceSqr!int(Point2D!int(entity.position.x, entity.position.y), Point2D!int(newBase.get.position.x, newBase.get.position.y))<400
+                    if(!newBase.isNull() && (idBuilder == entity.id || j<3 ))//distanceSqr!int(Point2D!int(entity.position.x, entity.position.y), Point2D!int(newBase.get.position.x, newBase.get.position.y))<400
                     {        
                         Nullable!(MoveAction) moveAction = MoveAction(newBase.get.position, true,false);
                         repairAction = RepairAction(newBase.get.id);
@@ -210,7 +217,7 @@ class Strategy{
                         j++;
                     } 
                     else {
-                        int rr = playerView.entityProperties[EntityType.House].buildScore;
+                       // int rr = playerView.entityProperties[EntityType.House].buildScore;
                         int newHouseX = 0;
                             int newHouseY  =0;
                             if(houseCount<4){
@@ -238,7 +245,7 @@ class Strategy{
                                 newHouseY = 1;//0;
                             }
                         bool isPlaceIsEmpty = IsPlaceEmptyForHouse(playerView, Vec2Int(newHouseX,newHouseY),entity.id);
-                        if (turretCount==1 && resCount>playerView.entityProperties[EntityType.Turret].buildScore && IsPlaceEmptyForHouse(playerView, Vec2Int(15,18),entity.id))
+                        if (turretCount==1 && k<4 && resCount>playerView.entityProperties[EntityType.Turret].buildScore && IsPlaceEmptyForHouse(playerView, Vec2Int(15,18),entity.id))
                         {
                             int turretX = 15;
                                 int turretY = 18;
@@ -255,8 +262,23 @@ class Strategy{
                                 isBuildBaseChecked = true;
                                 isHouseIsBuilding = true;
                                 idBuilder = entity.id;
+                                k++;
                         }
-                        else if(resCount>rr && isBuildBaseChecked==false && isPlaceIsEmpty){
+                        else if (turretCount==2 &&  k<4 && houseCount>=6 && resCount>playerView.entityProperties[EntityType.Turret].buildScore+rangedRes && IsPlaceEmptyForHouse(playerView, Vec2Int(18,15),entity.id))
+                        {
+                            int turretX = 18;
+                                int turretY = 15;
+                                buildAction = BuildAction(EntityType.Turret, Vec2Int(turretX,turretY) );
+                                Nullable!(MoveAction) moveAction = MoveAction(Vec2Int(turretX,turretY), true,false);
+                                EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
+                                action.entityActions[entity.id]=ent_act;
+                                //resCount-=countRes;
+                                isBuildBaseChecked = true;
+                                isHouseIsBuilding = true;
+                                idBuilder = entity.id;
+                                k++;
+                        }
+                        else if(resCount>houseCost && isBuildBaseChecked==false && isPlaceIsEmpty){//+rangedRes
                             // if(
                             //     houseCount==6 && resCount>playerView.entityProperties[EntityType.Turret].buildScore && IsPlaceEmptyForHouse(playerView, Vec2Int(15,18),entity.id)
                             // ){
@@ -298,14 +320,47 @@ class Strategy{
                                     }
                                 }
                             }
-                            Vec2Int target = nearestResource.get.position;
-                            Nullable!int resid = nearestResource.get().id;
-                            Nullable!(AutoAttack) autoattack = AutoAttack(10, [EntityType.Resource]);
+                            if (!nearestResource.isNull()){
+                                Vec2Int target = nearestResource.get.position;
+                                Nullable!int resid = nearestResource.get().id;
+                                Nullable!(AutoAttack) autoattack = AutoAttack(10, [EntityType.Resource]);
 
-                            Nullable!(MoveAction) moveAction = MoveAction(target, true,false);
-                            attackAction = AttackAction(resid,autoattack);
-                            EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
-                            action.entityActions[entity.id]=ent_act;
+                                Nullable!(MoveAction) moveAction = MoveAction(target, true,false);
+                                attackAction = AttackAction(resid,autoattack);
+                                EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
+                                action.entityActions[entity.id]=ent_act;
+                            }
+                            else
+                            {
+                                // int randx = uniform(0, 80);int randy = uniform(0, 80);
+                                // Nullable!(MoveAction) moveAction = MoveAction(Vec2Int(randx, randy), true,false);
+                                // EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
+                                // action.entityActions[entity.id]=ent_act; Nullable!Entity nearestEnemy;
+                    Nullable!Entity nearestEnemy;
+                    foreach (enemyEntity; playerView.entities) {
+                        if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get!=myId) {
+                            if (nearestEnemy.isNull() ||
+                                    distanceSqr!int(Point2D!int(entity.position.x, entity.position.y), Point2D!int(enemyEntity.position.x, enemyEntity.position.y)) <
+                                        distanceSqr(Point2D!int(entity.position.x, entity.position.y), Point2D!int(nearestEnemy.get.position.x, nearestEnemy.get.position.y))
+                            
+                                    ) {
+                                nearestEnemy = enemyEntity;
+                            }
+                        }
+                    }
+
+                    if(!nearestEnemy.isNull()){
+                        Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
+                                                                        EntityType.RangedUnit, EntityType.Turret,
+                                                                        EntityType.Wall,EntityType.House,EntityType.BuilderBase,
+                                                                        EntityType.MeleeBase,EntityType.RangedBase]);
+                        Nullable!int enemyid = nearestEnemy.get().id;
+                        attackAction = AttackAction(enemyid,autoattack);
+                        Nullable!(MoveAction) moveAction = MoveAction(nearestEnemy.get.position, true,true);
+                        EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
+                        action.entityActions[entity.id]=ent_act;
+                    }
+                            }
                         }
                     }
                 }
@@ -329,10 +384,7 @@ class Strategy{
                 }
                 else if (entity.entityType ==EntityType.RangedBase || entity.entityType ==EntityType.MeleeBase){
 
-                    int rangedRes = playerView.entityProperties[EntityType.RangedUnit].buildScore + rangeCount;
-
-                    int meleeCost = playerView.entityProperties[EntityType.MeleeUnit].buildScore + meleeCount;
-                    int houseCost = playerView.entityProperties[EntityType.House].buildScore;
+                    
                     
                     if (entity.entityType ==EntityType.RangedBase && (rangedRes<resCount) )
                     {
@@ -343,25 +395,6 @@ class Strategy{
                         resCount-=rangedRes;
                         isBuildUnitChecked = true;
                     }
-                    // else{
-                    //     action.entityActions[entity.id]=EntityAction(Nullable!(MoveAction).init, Nullable!(BuildAction).init, Nullable!(AttackAction).init, Nullable!(RepairAction).init);
-                    // }
-
-
-
-
-                    // if (resCount>meleeCost && meleeCount<5 && meleeCost<rangedRes/2 && entity.entityType ==EntityType.MeleeBase && (meleeCost<resCount))
-                    // {
-                    //     int size = playerView.entityProperties[EntityType.MeleeBase].size;
-                    //     buildAction = BuildAction(EntityType.MeleeUnit, Vec2Int(entity.position.x+size,entity.position.y) );
-                    //     EntityAction ent_act= EntityAction(Nullable!(MoveAction).init, buildAction, attackAction, repairAction);
-                    //     action.entityActions[entity.id]=ent_act;
-                    //     resCount-=meleeCost;
-                    //     isBuildUnitChecked = true;
-                    // }
-                    //  else{
-                    //     action.entityActions[entity.id]=EntityAction(Nullable!(MoveAction).init, Nullable!(BuildAction).init, Nullable!(AttackAction).init, Nullable!(RepairAction).init);
-                    // }
 
                 }
                 
