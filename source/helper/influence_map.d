@@ -5,7 +5,7 @@ import std.math;
 import std.conv;
 
 class InfluenceMap (T){
-    private: 
+    public: 
         T[][] infMap;
         int height;
         int width;
@@ -51,6 +51,45 @@ class InfluenceMap (T){
             this.height = _height;
             this.width = _width;
             infMap = array_generator(_height,_width);
+        }
+
+        Point2D!T[] GetNearest(Point2D!T p){
+            Point2D!T[] res;
+            res~=Point2D!T(p.x + 1, p.y);
+            res~=Point2D!T(p.x - 1, p.y);
+            res~=Point2D!T(p.x, p.y + 1);
+            res~=Point2D!T(p.x, p.y - 1);
+
+            foreach (Point2D!T point ; res)
+            {
+                // Проверяем, что не вышли за границы карты.
+                if (point.x < 0 || point.x >= height)
+                    continue;
+                if (point.y < 0 || point.y >= width)
+                    continue;
+                result~=neighbourNode;
+            }
+            return res;
+        }
+
+        bool IsNearestAnyEmpty(Point2D!T p, T emptyVal){
+            Point2D!T[] res;
+            res~=Point2D!T(p.x + 1, p.y);
+            res~=Point2D!T(p.x - 1, p.y);
+            res~=Point2D!T(p.x, p.y + 1);
+            res~=Point2D!T(p.x, p.y - 1);
+
+            foreach (Point2D!T point ; res)
+            {
+                // Проверяем, что не вышли за границы карты.
+                if (point.x < 0 || point.x >= height)
+                    continue;
+                if (point.y < 0 || point.y >= width)
+                    continue;
+                if( infMap[point.y][point.x]==emptyVal)
+                    return true;
+            }
+            return false;
         }
         
         void PutPotential(double power, double step, Point2D!T p)
