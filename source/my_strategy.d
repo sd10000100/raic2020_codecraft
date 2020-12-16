@@ -14,7 +14,7 @@ class MyStrategy
     
     Action getAction(PlayerView playerView, DebugInterface debugInterface)
     {
-        return strat.calculateAction(playerView,debugInterface);
+        return strat.calculateAction(playerView);
     }
 
     void debugUpdate(PlayerView playerView, DebugInterface debugInterface)
