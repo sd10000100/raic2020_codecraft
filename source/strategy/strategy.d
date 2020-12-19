@@ -98,45 +98,98 @@ buildQueue~=BuildItem(EntityType.Turret, Vec2Int(6,22));
 buildQueue~=BuildItem(EntityType.House, Vec2Int(9,21));
 // buildQueue~=BuildItem(EntityType.House, Vec2Int(13,21));
 buildQueue~=BuildItem(EntityType.Turret, Vec2Int(12,21));
-buildQueue~=BuildItem(EntityType.Turret, Vec2Int(4,22));
+//buildQueue~=BuildItem(EntityType.Turret, Vec2Int(4,22));
 
 buildQueue~=BuildItem(EntityType.Turret, Vec2Int(18,18));
 
 buildQueue~=BuildItem(EntityType.House, Vec2Int(17,21));
 
-buildQueue~=BuildItem(EntityType.House, Vec2Int(25,1));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(25,5));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(25,9));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(25,13));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(25,17));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(25,21));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(0,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(1,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(2,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(3,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(4,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(5,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(6,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(7,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(8,25));
 
-buildQueue~=BuildItem(EntityType.House, Vec2Int(1,25));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(5,25));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(9,25));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(13,25));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(17,25));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(21,25));
 
-buildQueue~=BuildItem(EntityType.House, Vec2Int(25,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(11,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(12,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(13,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(14,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(15,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(16,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(17,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(18,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(19,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(20,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(21,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(22,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(23,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(24,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,25));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,24));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,23));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,22));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,21));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,20));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,19));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,18));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,17));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,16));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,15));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,14));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,13));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,12));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,11));
 
-buildQueue~=BuildItem(EntityType.House, Vec2Int(29,1));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(29,5));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(29,9));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(29,13));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(29,17));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(29,21));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(29,25));
 
-buildQueue~=BuildItem(EntityType.House, Vec2Int(1,29));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(5,29));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(9,29));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(13,29));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(17,29));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(21,29));
-buildQueue~=BuildItem(EntityType.House, Vec2Int(25,29));
 
-buildQueue~=BuildItem(EntityType.House, Vec2Int(29,29));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,0));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,1));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,2));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,3));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,4));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,5));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,6));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,7));
+buildQueue~=BuildItem(EntityType.Wall, Vec2Int(25,8));
+
+buildQueue~=BuildItem(EntityType.House, Vec2Int(27,1));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(27,5));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(27,9));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(27,13));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(27,17));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(27,21));
+
+buildQueue~=BuildItem(EntityType.House, Vec2Int(1,27));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(5,27));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(9,27));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(13,27));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(17,27));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(21,27));
+
+buildQueue~=BuildItem(EntityType.House, Vec2Int(27,27));
+
+buildQueue~=BuildItem(EntityType.House, Vec2Int(31,1));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(31,5));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(31,9));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(31,13));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(31,17));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(31,21));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(31,25));
+
+buildQueue~=BuildItem(EntityType.House, Vec2Int(1,31));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(5,31));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(9,31));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(13,31));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(17,31));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(21,31));
+buildQueue~=BuildItem(EntityType.House, Vec2Int(25,31));
+
+buildQueue~=BuildItem(EntityType.House, Vec2Int(31,31));
     }
 
     bool is_unit(EntityType type){
@@ -540,12 +593,14 @@ buildQueue~=BuildItem(EntityType.House, Vec2Int(29,29));
                             EntityType tpe = EntityType.House;
                            //TODO:
                             bool isEmpty = false;
+                            bool isHouseGootNow = false;
                            if(buildQueue.length>0)
                                 {
                                     int l = 0;
                                     while(l<buildQueue.length)
                                     {
                                         isEmpty = IsPlaceEmptyForHouse(playerView, buildQueue[l].position,entity.id, playerView.entityProperties[buildQueue[l].typeByild].size);
+                                       
                                         if( isEmpty)// || buildQueue[l].isPriority
                                         {
                                             newHouseX = buildQueue[l].position.x;
