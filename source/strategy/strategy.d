@@ -6,6 +6,12 @@ import std.typecons;
 import std.conv;
 import std.algorithm;
 import std.stdio;
+import std.math;
+
+
+
+   
+
 
 
 struct EntityBuilder{
@@ -36,6 +42,7 @@ class Strategy{
     BuildItem[] buildQueue;
     EntityBuilder[int] builders;
     Vec2Int[int] attackers;
+    Entity[] myAttackers;
 
     int idBuilder = -1;
     int tempBuilder = -1;
@@ -220,7 +227,65 @@ buildQueue~=BuildItem(EntityType.House, Vec2Int(31,31));
         return true;
     }
 
+     Vec2Int getCenter()
+    {
+        int sumx = 0;
+        int sumy = 0;
+        foreach (entity; myAttackers) {
+            sumx+=entity.position.x;
+            sumy+=entity.position.y;
+        }
+
+        if(myAttackers.length==0)
+            return Vec2Int(0,0);
+        return Vec2Int((sumx/myAttackers.length).to!int,(sumy/myAttackers.length).to!int);
+    }
+
     
+    Vec2Int getDispersion()
+    {
+        auto mean = getCenter();
+
+        int sumx = 0;
+        int sumy = 0;
+        foreach (entity; myAttackers) {
+            sumx+=(entity.position.x-mean.x)*(entity.position.x-mean.x);
+            sumy+=(entity.position.y-mean.y)*(entity.position.y-mean.y);
+        }
+
+
+
+        if(myAttackers.length==0)
+            return Vec2Int(0,0);
+        return Vec2Int((sumx/myAttackers.length).to!int,(sumy/myAttackers.length).to!int);
+    }
+
+    double getPercentageNormalDistribution()
+    {
+        auto mean = getCenter();
+        auto disp = getDispersion();
+        auto dispersionX = sqrt(disp.x.to!double);
+        auto dispersionY = sqrt(disp.y.to!double);
+        double sum = 0;
+        foreach (entity; myAttackers) {
+            if( entity.position.x>=mean.x-dispersionX-1 && entity.position.x<=mean.x+dispersionX+1 &&
+                entity.position.y>=mean.y-dispersionY-1 && entity.position.y<=mean.y+dispersionY+1)
+                sum++;
+        }
+       
+        return (sum/myAttackers.length.to!double)*100;
+    }
+
+    int[] entitiesCloserEqToPoint(Vec2Int p,int dist)
+    {
+        int[] result = [];
+        foreach (entity; myAttackers) {
+            if(distanceSqr(Point2D!int(entity.position.x,entity.position.y), Point2D!int(p.x, p.y))<=dist*dist) //&& (sourceEntityId==0 || sourceEntityId!=iter->second.id) 
+                result~=entity.id;
+        }
+        return result;
+    }
+
 
     Action calculateAction(PlayerView playerView){
 
@@ -424,7 +489,7 @@ buildQueue~=BuildItem(EntityType.House, Vec2Int(29,29));
 
 
         }
-        
+        myAttackers= [];
         foreach (enemyEntity; playerView.entities) {
             if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get==myId) {
                 if (enemyEntity.entityType == EntityType.BuilderUnit)
@@ -434,10 +499,15 @@ buildQueue~=BuildItem(EntityType.House, Vec2Int(29,29));
 
 
                     }
-                if (enemyEntity.entityType == EntityType.RangedUnit)
+                if (enemyEntity.entityType == EntityType.RangedUnit){
                     rangeCount++;
-                if (enemyEntity.entityType == EntityType.MeleeUnit)
+                    myAttackers~=enemyEntity;
+                }
+                    
+                if (enemyEntity.entityType == EntityType.MeleeUnit){
                     meleeCount++;
+                    myAttackers~=enemyEntity;
+                    }
                 if (enemyEntity.entityType == EntityType.House)
                     {houseCount++;
                     
