@@ -6,12 +6,6 @@ import std.typecons;
 import std.conv;
 import std.algorithm;
 import std.stdio;
-import std.math;
-
-
-
-   
-
 
 
 struct EntityBuilder{
@@ -42,7 +36,6 @@ class Strategy{
     BuildItem[] buildQueue;
     EntityBuilder[int] builders;
     Vec2Int[int] attackers;
-    Entity[] myAttackers;
 
     int idBuilder = -1;
     int tempBuilder = -1;
@@ -227,65 +220,7 @@ buildQueue~=BuildItem(EntityType.House, Vec2Int(31,31));
         return true;
     }
 
-     Vec2Int getCenter()
-    {
-        int sumx = 0;
-        int sumy = 0;
-        foreach (entity; myAttackers) {
-            sumx+=entity.position.x;
-            sumy+=entity.position.y;
-        }
-
-        if(myAttackers.length==0)
-            return Vec2Int(0,0);
-        return Vec2Int((sumx/myAttackers.length).to!int,(sumy/myAttackers.length).to!int);
-    }
-
     
-    Vec2Int getDispersion()
-    {
-        auto mean = getCenter();
-
-        int sumx = 0;
-        int sumy = 0;
-        foreach (entity; myAttackers) {
-            sumx+=(entity.position.x-mean.x)*(entity.position.x-mean.x);
-            sumy+=(entity.position.y-mean.y)*(entity.position.y-mean.y);
-        }
-
-
-
-        if(myAttackers.length==0)
-            return Vec2Int(0,0);
-        return Vec2Int((sumx/myAttackers.length).to!int,(sumy/myAttackers.length).to!int);
-    }
-
-    double getPercentageNormalDistribution()
-    {
-        auto mean = getCenter();
-        auto disp = getDispersion();
-        auto dispersionX = sqrt(disp.x.to!double);
-        auto dispersionY = sqrt(disp.y.to!double);
-        double sum = 0;
-        foreach (entity; myAttackers) {
-            if( entity.position.x>=mean.x-dispersionX-1 && entity.position.x<=mean.x+dispersionX+1 &&
-                entity.position.y>=mean.y-dispersionY-1 && entity.position.y<=mean.y+dispersionY+1)
-                sum++;
-        }
-       
-        return (sum/myAttackers.length.to!double)*100;
-    }
-
-    int[] entitiesCloserEqToPoint(Vec2Int p,int dist)
-    {
-        int[] result = [];
-        foreach (entity; myAttackers) {
-            if(distanceSqr(Point2D!int(entity.position.x,entity.position.y), Point2D!int(p.x, p.y))<=dist*dist) //&& (sourceEntityId==0 || sourceEntityId!=iter->second.id) 
-                result~=entity.id;
-        }
-        return result;
-    }
-
 
     Action calculateAction(PlayerView playerView){
 
@@ -489,23 +424,20 @@ buildQueue~=BuildItem(EntityType.House, Vec2Int(29,29));
 
 
         }
-        myAttackers= [];
-       
+        
         foreach (enemyEntity; playerView.entities) {
             if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get==myId) {
                 if (enemyEntity.entityType == EntityType.BuilderUnit)
                     {
                         buildCount++;
+
+
+
                     }
-                if (enemyEntity.entityType == EntityType.RangedUnit){
+                if (enemyEntity.entityType == EntityType.RangedUnit)
                     rangeCount++;
-                    myAttackers~=enemyEntity;
-                }
-                    
-                if (enemyEntity.entityType == EntityType.MeleeUnit){
+                if (enemyEntity.entityType == EntityType.MeleeUnit)
                     meleeCount++;
-                    myAttackers~=enemyEntity;
-                    }
                 if (enemyEntity.entityType == EntityType.House)
                     {houseCount++;
                     
@@ -574,9 +506,6 @@ buildQueue~=BuildItem(EntityType.House, Vec2Int(29,29));
 
                     int meleeCost = playerView.entityProperties[EntityType.MeleeUnit].buildScore + meleeCount;
                     int houseCost = playerView.entityProperties[EntityType.House].buildScore;
- double percentageNormalDistribution = getPercentageNormalDistribution();
-
- Vec2Int center = getCenter();
 
         foreach (entity; playerView.entities) {
             int countRes = playerView.entityProperties[EntityType.RangedUnit].buildScore +rangeCount;
@@ -595,130 +524,45 @@ buildQueue~=BuildItem(EntityType.House, Vec2Int(29,29));
 
 				if(entity.entityType ==5 || entity.entityType ==7)//если вояка
                 {
-                    if(percentageNormalDistribution<60)
+                    Nullable!Entity nearestEnemy;
+
+                    foreach (enemyEntity; playerView.entities) {
+                        if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get!=myId) {
+                            if (nearestEnemy.isNull() ||
+                                    distanceSqr!int(Point2D!int(entity.position.x, entity.position.y), Point2D!int(enemyEntity.position.x, enemyEntity.position.y)) <
+                                        distanceSqr(Point2D!int(entity.position.x, entity.position.y), Point2D!int(nearestEnemy.get.position.x, nearestEnemy.get.position.y))
+                            
+                                    ) {
+                                nearestEnemy = enemyEntity;
+                            }
+                        }
+                    }
+
+                    if(!nearestEnemy.isNull()){
+                        Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
+                                                                        EntityType.RangedUnit, EntityType.Turret,
+                                                                        EntityType.Wall,EntityType.House,EntityType.BuilderBase,
+                                                                        EntityType.MeleeBase,EntityType.RangedBase]);
+                        Nullable!int enemyid = nearestEnemy.get().id;
+                        attackAction = AttackAction(enemyid,autoattack);
+                        Nullable!(MoveAction) moveAction = MoveAction(nearestEnemy.get.position, true,true);//nearestEnemy.get.position
+                        EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
+                        action.entityActions[entity.id]=ent_act;
+                        attackers.remove(entity.id);
+                    }
+                    else if(!(entity.id in attackers))
                     {
-                            Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
-                                                                            EntityType.RangedUnit, EntityType.Turret,
-                                                                            EntityType.Wall,EntityType.House,EntityType.BuilderBase,
-                                                                            EntityType.MeleeBase,EntityType.RangedBase]);
-                            attackAction = AttackAction(Nullable!int.init,autoattack);
-                            Nullable!(MoveAction) moveAction = MoveAction(center, true,true);//nearestEnemy.get.position
-                            EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
-                            action.entityActions[entity.id]=ent_act;
-                        
+                        int randx = uniform(0, 80);int randy = uniform(0, 80);
+                        Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
+                                                                        EntityType.RangedUnit, EntityType.Turret,
+                                                                        EntityType.Wall,EntityType.House,EntityType.BuilderBase,
+                                                                        EntityType.MeleeBase,EntityType.RangedBase]);
+                        attackAction = AttackAction(Nullable!int.init,autoattack);
+                        Nullable!(MoveAction) moveAction = MoveAction(Vec2Int(randx, randy), true,false);
+                        EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
+                        action.entityActions[entity.id]=ent_act; //Nullable!Entity nearestEnemy;
+                        attackers[entity.id] = Vec2Int(randx, randy);
                     }
-                    else{
-                        Nullable!Entity nearestEnemy;
-
-                        foreach (enemyEntity; playerView.entities) {
-                            if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get!=myId) {
-                                if (nearestEnemy.isNull() ||
-                                        distanceSqr!int(Point2D!int(entity.position.x, entity.position.y), Point2D!int(enemyEntity.position.x, enemyEntity.position.y)) <
-                                            distanceSqr(Point2D!int(entity.position.x, entity.position.y), Point2D!int(nearestEnemy.get.position.x, nearestEnemy.get.position.y))
-                                
-                                        ) {
-                                    nearestEnemy = enemyEntity;
-                                }
-                            }
-                        }
-                
-                        if (!nearestEnemy.isNull()){    
-
-                            // int attack = playerView.entityProperties[nearestEnemy.get.entityType].attack.get.attackRange;
-                            int myattack = playerView.entityProperties[entity.entityType].attack.get.attackRange;
-                            //attack->attack_range;
-
-                            auto  misfortuneCompanion =  entitiesCloserEqToPoint(nearestEnemy.get.position,myattack+1);
-                            int distSQRToEnemy = distanceSqr(Point2D!int(entity.position.x,entity.position.y) , Point2D!int(nearestEnemy.get.position.x,nearestEnemy.get.position.y));
-
-                            if(distSQRToEnemy<=myattack*myattack)
-                            {
-                                Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
-                                                                            EntityType.RangedUnit, EntityType.Turret,
-                                                                            EntityType.Wall,EntityType.House,EntityType.BuilderBase,
-                                                                            EntityType.MeleeBase,EntityType.RangedBase]);
-                                attackAction = AttackAction(Nullable!int.init,autoattack);
-                            
-
-                                EntityAction ent_act= EntityAction(Nullable!(MoveAction).init, Nullable!(BuildAction).init, attackAction, Nullable!(RepairAction).init);
-                                action.entityActions[entity.id]=ent_act;
-                            }
-                            else if(distSQRToEnemy>myattack*myattack && misfortuneCompanion.length>1)
-                            {
-                                Nullable!(MoveAction) moveAction = MoveAction(nearestEnemy.get.position, true,true);//nearestEnemy.get.position
-                                Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
-                                                                            EntityType.RangedUnit, EntityType.Turret,
-                                                                            EntityType.Wall,EntityType.House,EntityType.BuilderBase,
-                                                                            EntityType.MeleeBase,EntityType.RangedBase]);
-                                attackAction = AttackAction(Nullable!int.init,autoattack);
-                                EntityAction ent_act= EntityAction(moveAction, Nullable!(BuildAction).init, attackAction, Nullable!(RepairAction).init);
-                                action.entityActions[entity.id]=ent_act;
-                            }
-                            else {
-                                Nullable!(MoveAction) moveAction = MoveAction(nearestEnemy.get.position, true,true);//nearestEnemy.get.position
-                                Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
-                                                                            EntityType.RangedUnit, EntityType.Turret,
-                                                                            EntityType.Wall,EntityType.House,EntityType.BuilderBase,
-                                                                            EntityType.MeleeBase,EntityType.RangedBase]);
-                                attackAction = AttackAction(Nullable!int.init,autoattack);
-                                EntityAction ent_act= EntityAction(moveAction, Nullable!(BuildAction).init, attackAction, Nullable!(RepairAction).init);
-                                action.entityActions[entity.id]=ent_act;
-                            }   
-                        }
-
-                        else if(!(entity.id in attackers))
-                        {
-                            int randx = uniform(0, 80);int randy = uniform(0, 80);
-                            Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
-                                                                            EntityType.RangedUnit, EntityType.Turret,
-                                                                            EntityType.Wall,EntityType.House,EntityType.BuilderBase,
-                                                                            EntityType.MeleeBase,EntityType.RangedBase]);
-                            attackAction = AttackAction(Nullable!int.init,autoattack);
-                            Nullable!(MoveAction) moveAction = MoveAction(Vec2Int(randx, randy), true,false);
-                            EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
-                            action.entityActions[entity.id]=ent_act; //Nullable!Entity nearestEnemy;
-                            attackers[entity.id] = Vec2Int(randx, randy);
-                        }
-                    }
-                    // Nullable!Entity nearestEnemy;
-
-                    // foreach (enemyEntity; playerView.entities) {
-                    //     if (!enemyEntity.playerId.isNull() && enemyEntity.playerId.get!=myId) {
-                    //         if (nearestEnemy.isNull() ||
-                    //                 distanceSqr!int(Point2D!int(entity.position.x, entity.position.y), Point2D!int(enemyEntity.position.x, enemyEntity.position.y)) <
-                    //                     distanceSqr(Point2D!int(entity.position.x, entity.position.y), Point2D!int(nearestEnemy.get.position.x, nearestEnemy.get.position.y))
-                            
-                    //                 ) {
-                    //             nearestEnemy = enemyEntity;
-                    //         }
-                    //     }
-                    // }
-
-                    // if(!nearestEnemy.isNull()){
-                    //     Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
-                    //                                                     EntityType.RangedUnit, EntityType.Turret,
-                    //                                                     EntityType.Wall,EntityType.House,EntityType.BuilderBase,
-                    //                                                     EntityType.MeleeBase,EntityType.RangedBase]);
-                    //     Nullable!int enemyid = nearestEnemy.get().id;
-                    //     attackAction = AttackAction(enemyid,autoattack);
-                    //     Nullable!(MoveAction) moveAction = MoveAction(nearestEnemy.get.position, true,true);//nearestEnemy.get.position
-                    //     EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
-                    //     action.entityActions[entity.id]=ent_act;
-                    //     attackers.remove(entity.id);
-                    // }
-                    // else if(!(entity.id in attackers))
-                    // {
-                    //     int randx = uniform(0, 80);int randy = uniform(0, 80);
-                    //     Nullable!(AutoAttack) autoattack = AutoAttack(20, [EntityType.BuilderUnit, EntityType.MeleeUnit, 
-                    //                                                     EntityType.RangedUnit, EntityType.Turret,
-                    //                                                     EntityType.Wall,EntityType.House,EntityType.BuilderBase,
-                    //                                                     EntityType.MeleeBase,EntityType.RangedBase]);
-                    //     attackAction = AttackAction(Nullable!int.init,autoattack);
-                    //     Nullable!(MoveAction) moveAction = MoveAction(Vec2Int(randx, randy), true,false);
-                    //     EntityAction ent_act= EntityAction(moveAction, buildAction, attackAction, repairAction);
-                    //     action.entityActions[entity.id]=ent_act; //Nullable!Entity nearestEnemy;
-                    //     attackers[entity.id] = Vec2Int(randx, randy);
-                    // }
                 }
                 else if (entity.entityType ==3)//  && isHouseIsBuilding==false
                 {
